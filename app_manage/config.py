@@ -41,7 +41,8 @@ DEFAULT_SETTINGS = dict(
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    ]
+    ],
+    INSTALLED_APPS=[],
 )
 
 
