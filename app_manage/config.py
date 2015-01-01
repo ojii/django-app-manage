@@ -5,6 +5,7 @@ import tempfile
 import dj_database_url
 
 from .utils import NULL
+from .utils import with_metaclass
 
 gettext = lambda s: s
 
@@ -50,7 +51,7 @@ class DynamicConfigError(ValueError):
     pass
 
 
-class DynamicSetting(metaclass=abc.ABCMeta):
+class DynamicSetting(with_metaclass(abc.ABCMeta)):
     @abc.abstractmethod
     def get_value(self, argv, environ):
         pass

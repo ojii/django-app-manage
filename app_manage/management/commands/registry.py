@@ -1,6 +1,9 @@
 from contextlib import contextmanager
 from collections import defaultdict
-import threading
+try:
+    import thread as threading
+except ImportError:
+    import threading
 
 REGISTRY = defaultdict(list)
 

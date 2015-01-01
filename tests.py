@@ -179,7 +179,12 @@ class UtilsTests(unittest.TestCase):
     def test_ensure_cleanup(self):
         test_list = []
         with ensure_cleanup() as cleanup:
-            cleanup.append(test_list.clear)
+            if hasattr(list, 'clear'):
+                cleanup.append(test_list.clear)
+            else:
+                def clear():
+                    del test_list[:]
+                cleanup.append(clear)
             test_list.append(1)
             self.assertIn(1, test_list)
         self.assertNotIn(1, test_list)
