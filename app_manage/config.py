@@ -102,7 +102,7 @@ class Config(DynamicSetting):
                             return value
                         except IndexError:
                             pass
-                elif arg.startswith('{}='.format(arg_name)):
+                elif arg.startswith('{0}='.format(arg_name)):
                     value = arg[len(arg_name) + 1:]
                     del argv[i]
                     return value
