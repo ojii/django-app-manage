@@ -14,9 +14,10 @@ def main(apps, *args, **config):
     argv = config.pop('argv', sys.argv)
     environ = config.pop('environ', os.environ)
     full_settings = {}
-    full_settings.update(
-        {key: value for key, value in vars(defaults).items() if key.isupper()}
-    )
+    # TODO: Once Python 2.6 support can be dropped, switch back to dict comp
+    full_settings.update(dict(
+        (key, value) for key, value in vars(defaults).items() if key.isupper()
+    ))
     argv = list(argv)
     with ensure_cleanup() as cleanup:
         for key, value in config.items():
