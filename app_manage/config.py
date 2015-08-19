@@ -9,42 +9,6 @@ from .utils import with_metaclass
 
 gettext = lambda s: s
 
-DEFAULT_SETTINGS = dict(
-    CACHES={
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        }
-    },
-    CACHE_MIDDLEWARE_ANONYMOUS_ONLY=True,
-    DEBUG=True,
-    DATABASE_SUPPORTS_TRANSACTIONS=True,
-    SITE_ID=1,
-    USE_I18N=True,
-    MEDIA_URL='/media/',
-    STATIC_URL='/static/',
-    ADMIN_MEDIA_PREFIX='/static/admin/',
-    EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
-    SECRET_KEY='secret-key',
-    INTERNAL_IPS=['127.0.0.1'],
-    LANGUAGE_CODE="en",
-    LANGUAGES=(
-        ('en', gettext('English')),
-    ),
-    PASSWORD_HASHERS=(
-        'django.contrib.auth.hashers.MD5PasswordHasher',
-    ),
-    ALLOWED_HOSTS=['localhost'],
-    MIDDLEWARE_CLASSES=[
-        'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.middleware.common.CommonMiddleware',
-        'django.middleware.csrf.CsrfViewMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    ],
-    INSTALLED_APPS=[],
-)
-
 
 class DynamicConfigError(ValueError):
     pass
@@ -121,3 +85,13 @@ class DatabaseConfig(Config):
 class Flag(object):
     def __init__(self, name):
         self.name = name
+
+
+class Argument(object):
+    def __init__(self, config, callback):
+        self.config = config
+        self.callback = callback
+
+    def process(self, argv, environ, settings):
+        value = self.config.get_value(argv, environ)
+        self.callback(settings, value)

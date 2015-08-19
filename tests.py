@@ -1,7 +1,9 @@
+from collections import namedtuple
 import os
 import shutil
 import unittest
 
+from app_manage.config import Argument
 from app_manage.config import Config
 from app_manage.config import DatabaseConfig
 from app_manage.config import DynamicConfigError
@@ -10,6 +12,27 @@ from app_manage.config import TempDir
 from app_manage.core import main
 from app_manage.management.commands.registry import listen
 from app_manage.utils import ensure_cleanup
+
+
+Call = namedtuple('Call', 'args kwargs')
+
+
+class Callback(object):
+    def __init__(self):
+        self._calls = []
+
+    def __call__(self, *args, **kwargs):
+        self._calls.append(Call(args, kwargs))
+
+    @property
+    def num_calls(self):
+        return len(self._calls)
+
+    def get_call(self, index):
+        return self._calls[index]
+
+    def reset(self):
+        self._calls = []
 
 
 class ConfigTests(unittest.TestCase):
@@ -66,6 +89,49 @@ class ConfigTests(unittest.TestCase):
         finally:
             if value is not None:
                 shutil.rmtree(value, ignore_errors=True)
+
+    def test_argument(self):
+        callback = Callback()
+        argument = Argument(
+            Config(
+                env='CONFIG',
+                arg='--config',
+                default=None
+            ),
+            callback=callback
+        )
+        argument.process([], {}, {})
+        self.assertEqual(callback.num_calls, 1)
+        self.assertEqual(callback.get_call(0).args, ({}, None))
+        callback.reset()
+        argument.process(['--config', 'value'], {}, {})
+        self.assertEqual(callback.num_calls, 1)
+        self.assertEqual(callback.get_call(0).args, ({}, 'value'))
+        callback.reset()
+        argument.process([], {'CONFIG': 'value'}, {})
+        self.assertEqual(callback.num_calls, 1)
+        self.assertEqual(callback.get_call(0).args, ({}, 'value'))
+
+    def test_argument_process(self):
+        def callback(settings, value):
+            settings['TEST'] = value
+        argument = Argument(
+            Config(
+                env='CONFIG',
+                arg='--config',
+                default=None
+            ),
+            callback=callback
+        )
+        test_settings = {}
+        argument.process([], {}, test_settings)
+        self.assertEqual(test_settings, {'TEST': None})
+        test_settings = {}
+        argument.process(['--config', 'value'], {}, test_settings)
+        self.assertEqual(test_settings, {'TEST': 'value'})
+        test_settings = {}
+        argument.process([], {'CONFIG': 'value'}, test_settings)
+        self.assertEqual(test_settings, {'TEST': 'value'})
 
 
 class CoreTests(unittest.TestCase):

@@ -3,22 +3,31 @@ import sys
 
 from django.conf import settings
 
-from .config import DEFAULT_SETTINGS
 from .config import DynamicSetting
 from .utils import ensure_cleanup
+from . import defaults
 
 
-def main(apps, argv=sys.argv, environ=os.environ, **configuration):
+# Python 3 signature:
+#   main(apps, *, argv=sys.argv, environ=os.environ, *args, **kwargs)
+def main(apps, *args, **config):
+    argv = config.pop('argv', sys.argv)
+    environ = config.pop('environ', os.environ)
     full_settings = {}
-    full_settings.update(DEFAULT_SETTINGS)
+    full_settings.update(
+        {key: value for key, value in vars(defaults).items() if key.isupper()}
+    )
     argv = list(argv)
     with ensure_cleanup() as cleanup:
-        for key, value in configuration.items():
+        for key, value in config.items():
             if isinstance(value, DynamicSetting):
                 cleanup.append(value.cleanup)
                 full_settings[key] = value.get_value(argv, environ)
             else:
                 full_settings[key] = value
+
+        for arg in args:
+            arg.process(argv, environ, full_settings)
 
         for app in apps:
             if app not in full_settings['INSTALLED_APPS']:

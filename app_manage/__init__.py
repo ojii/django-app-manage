@@ -1,3 +1,4 @@
+from .config import Argument
 from .config import Config
 from .config import DatabaseConfig
 from .config import Flag
