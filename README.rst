@@ -13,12 +13,9 @@ Assuming you have an application named ``my_awesome_app``, add the following to
 the root of the project (aka next to ``setup.py``) in a file called
 ``manage.py``::
 
-
-    from django.conf.urls import patterns
-
     import app_manage
 
-    urlpatterns = patterns('')
+    urlpatterns = []
 
     if __name__ == '__main__':
         app_manage.main(
